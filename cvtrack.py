@@ -7,10 +7,11 @@ import numpy as np
 import time
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-f', '--file', help='Path to video, defaults to camera')
+parser.add_argument('-F', '--file', help='Path to video, defaults to camera')
 parser.add_argument('-b', '--background-buffer-length', type=int, default=100, help='Number of frames to use as a background averaging buffer')
 parser.add_argument('-w', '--width', type=int, default=0, help='Width to resize video frames to, defaults to no resize')
 parser.add_argument('-t', '--threshold', type=int, default=5, help='Threshhold pixel diff for changes')
+parser.add_argument('-f', '--foreground-threshold', type=int, default=25, help='Threshhold pixel diff for foreground')
 args = vars(parser.parse_args())
 
 if args.get('file'):
@@ -25,6 +26,7 @@ two_behind = None
 cv2.namedWindow('background')
 cv2.namedWindow('angie')
 cv2.namedWindow('diff')
+cv2.namedWindow('foreground')
 background = None
 
 def accumulate_background(backgroundBuffer, bg, two, one):
@@ -40,7 +42,7 @@ def accumulate_background(backgroundBuffer, bg, two, one):
     print len(backgroundBuffer)
     print int(args.get('background_buffer_length'))
     if len(backgroundBuffer) == args.get('background_buffer_length'):
-        backgroundBuffer = np.delete(backgroundBuffer, 1, axis=0)
+        backgroundBuffer = np.delete(backgroundBuffer, 0, axis=0)
         diff = np.sum(backgroundBuffer, axis=0)
         print np.any(diff)
         ret = bg.copy()
@@ -63,6 +65,7 @@ while True:
     if args.get('width'):
         frame = imutils.resize(frame, width=args['width'])
 
+    gray = frame
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (21, 21), 0)
     if background == None:
@@ -77,10 +80,11 @@ while True:
         (backgroundBuffer, background) = accumulate_background(backgroundBuffer, background, two_behind, one_behind)
     if np.any(background):
         diff = cv2.absdiff(background, gray)
-        diff = cv2.threshold(diff, 25, 255, cv2.THRESH_BINARY)[1]
+        diff = cv2.threshold(diff, args.get('foreground_threshold'), 255, cv2.THRESH_BINARY)[1]
         diff = cv2.dilate(diff, None, iterations=2)
         cv2.imshow('background', background)
         cv2.imshow('angie', frame)
+        cv2.imshow('foreground', diff)
         if cv2.waitKey(50) % 256 == ord('q'):
             break
 
