@@ -23,11 +23,11 @@ else:
 backgroundBuffer = None
 one_behind = None
 two_behind = None
-#cv2.namedWindow('background')
-#cv2.namedWindow('frame')
-#cv2.namedWindow('diff')
-#cv2.namedWindow('bgdiff')
-#cv2.namedWindow('gray')
+cv2.namedWindow('frame')
+cv2.namedWindow('gray')
+cv2.namedWindow('diff')
+cv2.namedWindow('bgdiff')
+cv2.namedWindow('background')
 cv2.namedWindow('foreground')
 background = None
 
@@ -53,7 +53,7 @@ def accumulate_background(backgroundBuffer, bg, two, one):
     bg_filter = collected.copy()
     bg_filter[collected == 0] = 255
     bg_filter[collected != 0] = 0
-    #cv2.imshow('bgdiff', collected)
+    cv2.imshow('bgdiff', collected)
     ret = one.copy()
     ret[bg_filter == 0] = 0
     return (backgroundBuffer, ret, bg_filter, diff)
@@ -68,10 +68,10 @@ while True:
         frame = imutils.resize(frame, width=args['width'])
 
     gray = frame
-    #gray = cv2.cvtColor(frame, cv2.COLOR_BGR2HLS)
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2HLS)
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (args['blur'], args['blur']), 0)
-    #gray = cv2.medianBlur(gray, 5)
+    gray = cv2.medianBlur(gray, 5)
     if background is None:
         background = gray.copy()
     if one_behind is None:
@@ -86,10 +86,10 @@ while True:
                 foreground = frame.copy()
                 foreground[bg_filter == 255, :] = 0
                 cv2.imshow('foreground', foreground)
-            #cv2.imshow('background', background)
-            #cv2.imshow('frame', frame)
-            #cv2.imshow('gray', gray)
-            #cv2.imshow('diff', prev_diff)
+            cv2.imshow('background', background)
+            cv2.imshow('frame', frame)
+            cv2.imshow('gray', gray)
+            cv2.imshow('diff', prev_diff)
     if cv2.waitKey(10) % 256 == ord('q'):
         break
 
